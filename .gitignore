@@ -8,6 +8,7 @@ __pycache__/
 *.pyc
 
 # Model files
+*.dll
 *.pkl
 *.joblib
 
