@@ -1,0 +1,16 @@
+# Python virtual environments
+venv/
+env/
+ash/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Model files
+*.pkl
+*.joblib
+
+# OS files
+.DS_Store
+Thumbs.db
