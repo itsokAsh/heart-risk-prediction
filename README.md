@@ -13,8 +13,30 @@ This application provides a comprehensive heart disease risk assessment tool wit
 
 ## Installation
 
-1. Clone this repository
-2. Install dependencies:
+### Prerequisites
+- Python 3.8 or higher
+- pip (Python package manager)
+
+### Setup Instructions
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/itsokAsh/heart-risk-prediction.git
+cd heart-risk-prediction
+```
+
+2. **Create a virtual environment (optional but recommended):**
+```bash
+# On Windows
+python -m venv venv
+venv\Scripts\activate
+
+# On macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+3. **Install dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
@@ -25,6 +47,15 @@ Run the Streamlit application:
 ```bash
 streamlit run app.py
 ```
+
+The application will open in your default web browser at `http://localhost:8501`
+
+## Quick Start Guide
+
+1. **Enter Your Health Metrics**: Fill in your health information on the left sidebar
+2. **Get Risk Assessment**: View your heart disease risk prediction with a visual gauge
+3. **Review Recommendations**: Read personalized health recommendations based on your profile
+4. **Generate Report** (Optional): Export a PDF report of your assessment
 
 ## Project Structure
 
