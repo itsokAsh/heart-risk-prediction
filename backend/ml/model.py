@@ -77,4 +77,3 @@ def predict(input_data: dict[str, Any]) -> tuple[float, str]:
     return risk_score, risk_level
 
 
-def predict_debug(input_data: dict[str, Any]) -> dict[str, float | str]:
