@@ -60,7 +60,6 @@ class PredictionResponse(BaseModel):
     risk_level: str
     recommendations: list[RecommendationItem]
     created_at: datetime
-    debug: dict | None = None
 
 
 class AssessmentSummary(BaseModel):

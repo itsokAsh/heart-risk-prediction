@@ -78,27 +78,3 @@ def predict(input_data: dict[str, Any]) -> tuple[float, str]:
 
 
 def predict_debug(input_data: dict[str, Any]) -> dict[str, float | str]:
-    """Return raw probabilities for debugging."""
-    if _model is None or _scaler is None:
-        raise RuntimeError("Model not loaded — call load_model() first")
-
-    df = pd.DataFrame([input_data]).reindex(columns=FEATURE_ORDER)
-    df = df.astype(float)
-    scaled = _scaler.transform(df)
-
-    prob = float(_model.predict_proba(scaled)[0][1])
-    risk_score = round(prob * 100, 2)
-
-    if risk_score > 60:
-        risk_level = "High"
-    elif risk_score > 30:
-        risk_level = "Moderate"
-    else:
-        risk_level = "Low"
-
-    return {
-        "raw_probability": round(prob * 100, 2),
-        "calibrated_probability": round(prob * 100, 2),
-        "risk_score": risk_score,
-        "risk_level": risk_level,
-    }

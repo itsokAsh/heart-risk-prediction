@@ -11,7 +11,6 @@ function Assess() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [debugInfo, setDebugInfo] = useState({ payload: null, response: null });
 
   const assessmentId = useMemo(() => searchParams.get('id'), [searchParams]);
 
@@ -33,11 +32,9 @@ function Assess() {
     setLoading(true);
     setError('');
     setResult(null);
-    setDebugInfo({ payload, response: null });
     try {
       const res = await api.post('/predict', payload);
       setResult(res.data);
-      setDebugInfo({ payload, response: res.data });
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to run assessment');
     } finally {
@@ -75,19 +72,6 @@ function Assess() {
             </>
           )}
 
-          {(debugInfo.payload || debugInfo.response) && (
-            <section className="debug-panel" aria-label="Debug payload and response">
-              <h3>Debug panel</h3>
-              <div className="debug-block">
-                <span className="debug-label">Request payload</span>
-                <pre>{JSON.stringify(debugInfo.payload, null, 2)}</pre>
-              </div>
-              <div className="debug-block">
-                <span className="debug-label">Response</span>
-                <pre>{JSON.stringify(debugInfo.response, null, 2)}</pre>
-              </div>
-            </section>
-          )}
         </section>
       </div>
     </main>
