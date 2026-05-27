@@ -1,73 +1,77 @@
-# Heart Disease Risk Prediction Application
+# HeartGuard
 
-This application provides a comprehensive heart disease risk assessment tool with interactive visualizations and detailed reporting capabilities.
+Full-stack heart disease risk assessment with a FastAPI backend, PostgreSQL, and a React frontend (in progress). The backend exposes prediction, report generation, and authentication APIs.
 
 ## Features
 
-- Heart disease risk prediction using machine learning
-- Interactive gauge visualization of risk scores
+- Heart disease risk prediction using XGBoost
 - Input validation for health metrics
 - Personalized health recommendations
-- Detailed PDF report generation
-- User-friendly web interface
+- PDF report generation
+- Multi-language audio reports
+- JWT authentication and assessment history
 
-## Installation
+## Local Development (Docker)
 
 ### Prerequisites
-- Python 3.8 or higher
-- pip (Python package manager)
+- Docker Desktop
 
-### Setup Instructions
-
-1. **Clone the repository:**
+### Setup
+1. Copy env template:
 ```bash
-git clone https://github.com/itsokAsh/heart-risk-prediction.git
-cd heart-risk-prediction
+cp .env.example .env
 ```
 
-2. **Create a virtual environment (optional but recommended):**
+2. Start services:
 ```bash
-# On Windows
-python -m venv venv
-venv\Scripts\activate
-
-# On macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
+docker compose up --build
 ```
 
-3. **Install dependencies:**
-```bash
-pip install -r requirements.txt
-```
+### URLs
+- Backend API: `http://localhost:8000`
+- Health check: `http://localhost:8000/api/health`
 
-## Usage
+### Environment Notes
+- `.env` is used by the backend container. For Docker Compose, `DATABASE_URL` should use `postgres` as the hostname.
+- `JWT_SECRET` should be a strong 32+ byte value in production.
+- Rotate `JWT_SECRET` carefully: changing it will invalidate all existing tokens. Plan a maintenance window or support dual secrets if you need seamless rotation.
 
-Run the Streamlit application:
-```bash
-streamlit run app.py
-```
+## API Quick Start
 
-The application will open in your default web browser at `http://localhost:8501`
+1. Register a user: `POST /api/auth/register`
+2. Login to get a token: `POST /api/auth/login`
+3. Send prediction payload: `POST /api/predict`
+4. Download reports: `GET /api/reports/{assessment_id}/pdf`, `GET /api/reports/{assessment_id}/audio`
 
-## Quick Start Guide
+## API Reference (Backend)
 
-1. **Enter Your Health Metrics**: Fill in your health information on the left sidebar
-2. **Get Risk Assessment**: View your heart disease risk prediction with a visual gauge
-3. **Review Recommendations**: Read personalized health recommendations based on your profile
-4. **Generate Report** (Optional): Export a PDF report of your assessment
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+
+### Prediction
+- `POST /api/predict`
+
+### Assessments
+- `GET /api/assessments`
+- `GET /api/assessments/{id}`
+- `DELETE /api/assessments/{id}`
+
+### Reports
+- `GET /api/reports/{assessment_id}/pdf`
+- `GET /api/reports/{assessment_id}/audio?lang=en`
 
 ## Project Structure
 
-- `app.py`: Main Streamlit application
-- `utils.py`: Utility functions for validation, visualization, and report generation
-- `model/`: Directory containing trained model files
-- `requirements.txt`: Project dependencies
+- `backend/`: FastAPI app, ML logic, migrations, tests
+- `frontend/`: React app (in progress)
+- `docker-compose.yml`: Local container orchestration
+- `.env.example`: Environment template
 
 ## Dependencies
 
-- Python 3.8+
-- See `requirements.txt` for complete list of dependencies
+- Backend dependencies are in [backend/requirements.txt](backend/requirements.txt)
 
 ## Notes
 
@@ -101,10 +105,8 @@ The application uses an XGBoost classifier trained on the UCI Heart Disease data
 
 ## Security and Privacy
 
-- No personal health data is stored
-- All processing is done locally
-- PDF reports are generated on-demand and immediately removed
-- No external API calls or data sharing
+- No personal health data is stored beyond assessments tied to accounts
+- PDF and audio reports are generated on demand
 
 ## Contributing
 
@@ -112,7 +114,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see [License.txt](License.txt) for details.
 
 ## Disclaimer
 

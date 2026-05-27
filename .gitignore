@@ -1,3 +1,8 @@
+# Dependencies and build outputs
+node_modules/
+dist/
+build/
+
 # Environment variables
 .env
 .env.local
@@ -17,6 +22,8 @@ __pycache__/
 *.dll
 *.pkl
 *.joblib
+!backend/ml/artifacts/xgb_model.pkl
+!backend/ml/artifacts/scaler.pkl
 
 # OS files
 .DS_Store
