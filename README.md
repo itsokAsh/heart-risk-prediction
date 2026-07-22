@@ -75,7 +75,7 @@ docker compose up --build
 
 ## Notes
 
-- All health recommendations are general guidelines. Always consult with healthcare professionals for medical advice.
+- All health recommendations are general guidelines.
 - The risk prediction model is based on statistical analysis and should not be used as the sole basis for medical decisions.
 
 ## Input Features
