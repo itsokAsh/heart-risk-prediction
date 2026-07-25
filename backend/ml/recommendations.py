@@ -2,6 +2,15 @@
 
 from typing import Any
 
+from ml.constants import (
+    CATEGORY_IMMEDIATE,
+    CATEGORY_PREVENTIVE,
+    CATEGORY_LIFESTYLE,
+    CATEGORY_DIET,
+    CATEGORY_EXERCISE,
+    HIGH_RISK_THRESHOLD,
+)
+
 
 def generate_health_recommendations(user_input: dict[str, Any], risk_score: float) -> list[dict[str, Any]]:
     """
@@ -11,9 +20,9 @@ def generate_health_recommendations(user_input: dict[str, Any], risk_score: floa
     recommendations: list[dict[str, Any]] = []
 
     # Risk-based recommendations
-    if risk_score > 0.5:
+    if risk_score > (HIGH_RISK_THRESHOLD / 100.0):
         risk_rec = {
-            "category": "🚨 Immediate Actions Required",
+            "category": CATEGORY_IMMEDIATE,
             "advice": "Please take these steps as soon as possible to protect your heart health:",
             "steps": [
                 "Schedule an appointment with a cardiologist within the next week",
@@ -26,7 +35,7 @@ def generate_health_recommendations(user_input: dict[str, Any], risk_score: floa
         }
     else:
         risk_rec = {
-            "category": "✅ Preventive Measures",
+            "category": CATEGORY_PREVENTIVE,
             "advice": "Great job! Here are some steps to keep your heart healthy:",
             "steps": [
                 "Schedule regular check-ups with your primary care physician",
@@ -40,7 +49,7 @@ def generate_health_recommendations(user_input: dict[str, Any], risk_score: floa
 
     # Lifestyle recommendations based on metrics
     lifestyle_rec: dict[str, Any] = {
-        "category": "💪 Lifestyle Modifications",
+        "category": CATEGORY_LIFESTYLE,
         "advice": "Here are some lifestyle changes that can make a big difference:",
         "steps": [],
     }
@@ -89,7 +98,7 @@ def generate_health_recommendations(user_input: dict[str, Any], risk_score: floa
 
     # Diet recommendations
     diet_rec = {
-        "category": "🥗 Dietary Guidelines",
+        "category": CATEGORY_DIET,
         "advice": "Your diet plays a crucial role in heart health. Here are some simple guidelines:",
         "steps": [
             "Eat a variety of colorful fruits and vegetables daily (aim for 5-7 servings)",
@@ -104,12 +113,12 @@ def generate_health_recommendations(user_input: dict[str, Any], risk_score: floa
 
     # Exercise recommendations
     exercise_rec: dict[str, Any] = {
-        "category": "🏃\u200d♂️ Physical Activity Plan",
+        "category": CATEGORY_EXERCISE,
         "advice": "Regular physical activity is essential for heart health. Here's a plan for you:",
         "steps": [],
     }
 
-    if risk_score > 0.5:
+    if risk_score > (HIGH_RISK_THRESHOLD / 100.0):
         exercise_rec["steps"].extend([
             "Begin with supervised exercise sessions under medical guidance",
             "Start with short, low-intensity walks (5-10 minutes)",

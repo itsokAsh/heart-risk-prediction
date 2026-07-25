@@ -30,7 +30,7 @@ function RiskResult({ result }) {
   if (!result) return null;
 
   const { risk_score, risk_level, recommendations } = result;
-  const isHighRisk = risk_score > 50;
+  const isHighRisk = risk_score > 60;
 
   const toggleExpand = (idx) => {
     setExpandedIdx((prev) => (prev === idx ? null : idx));

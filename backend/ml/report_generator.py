@@ -10,6 +10,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
+from ml.constants import HIGH_RISK_THRESHOLD
+
 logger = logging.getLogger(__name__)
 
 
@@ -68,7 +70,7 @@ class ReportGenerator:
 
         # Executive Summary
         content.append(Paragraph("Executive Summary", self.heading_style))
-        if risk_score > 50:
+        if risk_score > HIGH_RISK_THRESHOLD:
             content.append(
                 Paragraph(
                     f"Your heart disease risk assessment shows a <b>HIGH RISK</b> level of {risk_score:.1f}%. "
@@ -128,7 +130,7 @@ class ReportGenerator:
         # Risk Assessment with Explanation
         content.append(Paragraph("Understanding Your Risk Assessment", self.heading_style))
 
-        if risk_score > 50:
+        if risk_score > HIGH_RISK_THRESHOLD:
             content.append(
                 Paragraph(
                     f"<b>Risk Level: HIGH ({risk_score:.1f}%)</b>",
@@ -160,7 +162,7 @@ class ReportGenerator:
         content.append(Spacer(1, 20))
 
         # Immediate Action Required
-        if risk_score > 50:
+        if risk_score > HIGH_RISK_THRESHOLD:
             content.append(Paragraph("\U0001f6a8 IMMEDIATE ACTION REQUIRED", self.heading_style))
             content.append(
                 Paragraph(

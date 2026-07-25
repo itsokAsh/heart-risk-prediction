@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.database import init_db
-from app.routers import auth_router, predict_router, report_router, assessment_router
+from app.routers import auth_router, predict_router, report_router, assessment_router, ai_router
 from ml.model import load_model
 
 logger = logging.getLogger(__name__)
@@ -46,6 +46,7 @@ app.include_router(auth_router.router, prefix="/api/auth", tags=["Authentication
 app.include_router(predict_router.router, prefix="/api", tags=["Prediction"])
 app.include_router(report_router.router, prefix="/api", tags=["Reports"])
 app.include_router(assessment_router.router, prefix="/api", tags=["Assessments"])
+app.include_router(ai_router.router, prefix="/api/ai", tags=["AI"])
 
 
 @app.get("/api/health", tags=["Health"])

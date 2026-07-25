@@ -7,26 +7,12 @@ from typing import Any
 
 import pandas as pd
 
+from ml.constants import FEATURE_ORDER, classify_risk
+
 logger = logging.getLogger(__name__)
 
 _model = None
 _scaler = None
-
-FEATURE_ORDER = [
-    "age",
-    "sex",
-    "cp",
-    "trestbps",
-    "chol",
-    "fbs",
-    "restecg",
-    "thalach",
-    "exang",
-    "oldpeak",
-    "slope",
-    "ca",
-    "thal",
-]
 
 ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
 
@@ -66,13 +52,7 @@ def predict(input_data: dict[str, Any]) -> tuple[float, str]:
 
     prob = float(_model.predict_proba(scaled)[0][1])
     risk_score = round(prob * 100, 2)
-
-    if risk_score > 60:
-        risk_level = "High"
-    elif risk_score > 30:
-        risk_level = "Moderate"
-    else:
-        risk_level = "Low"
+    risk_level = classify_risk(risk_score)
 
     return risk_score, risk_level
 

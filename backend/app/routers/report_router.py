@@ -72,10 +72,12 @@ async def download_audio_report(
     assessment = await _get_owned_assessment(assessment_id, current_user, db)
 
     try:
-        audio_bytes = generate_audio_report(
+        audio_bytes = await generate_audio_report(
             risk_score=assessment.risk_score,
             recommendations=assessment.recommendations,
             language_code=lang,
+            input_data=assessment.input_data,
+            risk_level=assessment.risk_level,
         )
     except Exception as exc:
         logger.exception("Audio generation failed")

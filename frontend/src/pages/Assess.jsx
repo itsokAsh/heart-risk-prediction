@@ -4,6 +4,8 @@ import api from '../api/client';
 import HealthForm from '../components/HealthForm';
 import RiskResult from '../components/RiskResult';
 import ReportDownload from '../components/ReportDownload';
+import AiInsight from '../components/AiInsight';
+import ChatWidget from '../components/ChatWidget';
 import '../styles/assess.css';
 
 function Assess() {
@@ -42,6 +44,8 @@ function Assess() {
     }
   };
 
+  const currentAssessmentId = result?.id || assessmentId;
+
   return (
     <main className="page assess-page">
       <div className="container assess-grid">
@@ -68,14 +72,19 @@ function Assess() {
           ) : (
             <>
               <RiskResult result={result} />
-              <ReportDownload assessmentId={result?.id || assessmentId} />
+              <AiInsight assessmentId={currentAssessmentId} />
+              <ReportDownload assessmentId={currentAssessmentId} />
             </>
           )}
 
         </section>
       </div>
+
+      {/* Floating AI Chat — only visible after a result */}
+      <ChatWidget assessmentId={currentAssessmentId} />
     </main>
   );
 }
 
 export default Assess;
+

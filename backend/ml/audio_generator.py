@@ -6,20 +6,44 @@ from typing import Any
 
 from gtts import gTTS
 
+from ml.constants import AUDIO_INCLUDED_CATEGORIES, HIGH_RISK_THRESHOLD
+
 logger = logging.getLogger(__name__)
 
 
-def generate_audio_report(
+async def generate_audio_report(
     risk_score: float,
     recommendations: list[dict[str, Any]],
     language_code: str,
+    input_data: dict[str, Any] | None = None,
+    risk_level: str | None = None,
 ) -> bytes:
     """
-    Generate an audio report in the specified language with human-like, simple explanations.
+    Generate an audio report in the specified language.
+    If input_data is provided, uses Groq LLM to generate a personalized spoken script
+    referencing the patient's specific clinical values before synthesizing audio with gTTS.
+    Falls back gracefully to template text if LLM is unavailable.
     risk_score is expected as a percentage (0-100).
     """
     try:
-        report_texts = {
+        report_text = None
+        if input_data:
+            try:
+                from ml.llm_client import generate_audio_script
+                level = risk_level or ("High" if risk_score > HIGH_RISK_THRESHOLD else ("Moderate" if risk_score > 30 else "Low"))
+                report_text = await generate_audio_script(
+                    input_data=input_data,
+                    risk_score=risk_score,
+                    risk_level=level,
+                    recommendations=recommendations,
+                    language_code=language_code,
+                )
+                logger.info("Generated personalized LLM script for audio report (%d chars)", len(report_text))
+            except Exception as err:
+                logger.warning("AI script generation failed for audio, falling back to template: %s", err)
+
+        if not report_text:
+            report_texts = {
             "en": {
                 "intro": "Hello there! I have your heart health assessment ready. Let me explain what we found in simple terms.",
                 "high_risk": "I need to be very clear with you - your risk score is {score:.1f} percent, which is quite high. This means you have a significant chance of developing heart problems. I'm not trying to scare you, but this is serious and you need to take action right away.",
@@ -126,31 +150,32 @@ def generate_audio_report(
             },
         }
 
-        texts = report_texts.get(language_code, report_texts["en"])
+        if not report_text:
+            texts = report_texts.get(language_code, report_texts["en"])
 
-        report_text = texts["intro"] + " "
+            report_text = texts["intro"] + " "
 
-        if risk_score > 50:
-            report_text += texts["high_risk"].format(score=risk_score) + " "
-            report_text += texts["explanation"] + " "
-            report_text += texts["high_risk_explanation"] + " "
-        else:
-            report_text += texts["low_risk"].format(score=risk_score) + " "
-            report_text += texts["explanation"] + " "
-            report_text += texts["low_risk_explanation"] + " "
+            if risk_score > HIGH_RISK_THRESHOLD:
+                report_text += texts["high_risk"].format(score=risk_score) + " "
+                report_text += texts["explanation"] + " "
+                report_text += texts["high_risk_explanation"] + " "
+            else:
+                report_text += texts["low_risk"].format(score=risk_score) + " "
+                report_text += texts["explanation"] + " "
+                report_text += texts["low_risk_explanation"] + " "
 
-        report_text += texts["recommendations"] + " "
-        if risk_score > 50:
-            report_text += texts["immediate_action"] + " "
-            report_text += texts["emergency"] + " "
+            report_text += texts["recommendations"] + " "
+            if risk_score > HIGH_RISK_THRESHOLD:
+                report_text += texts["immediate_action"] + " "
+                report_text += texts["emergency"] + " "
 
-        report_text += texts["lifestyle_tips"] + " "
-        for rec in recommendations:
-            if rec["category"] in ["Lifestyle Modifications", "Dietary Guidelines", "Physical Activity Plan"]:
-                for step in rec["steps"][:2]:
-                    report_text += step + ". "
+            report_text += texts["lifestyle_tips"] + " "
+            for rec in recommendations:
+                if rec["category"] in AUDIO_INCLUDED_CATEGORIES:
+                    for step in rec["steps"][:2]:
+                        report_text += step + ". "
 
-        report_text += " " + texts["closing"]
+            report_text += " " + texts["closing"]
 
         try:
             tts = gTTS(text=report_text, lang=language_code, slow=False)

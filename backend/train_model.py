@@ -29,7 +29,8 @@ from xgboost import XGBClassifier
 import pickle
 import warnings
 
-warnings.filterwarnings("ignore")
+# Only suppress known non-actionable XGBoost warnings, not all warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="xgboost")
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR / "data" / "heart.csv"
@@ -231,12 +232,8 @@ def train_model():
         prob = calibrated_model.predict_proba(test_scaled)[0][1]
         risk_pct = round(prob * 100, 2)
 
-        if risk_pct > 60:
-            level = "High"
-        elif risk_pct > 30:
-            level = "Moderate"
-        else:
-            level = "Low"
+        from ml.constants import classify_risk
+        level = classify_risk(risk_pct)
 
         print(f"\n{case['name']}:")
         print(f"  Risk Score:  {risk_pct}%")
