@@ -17,3 +17,4 @@ plotly>=5.13.0
 pytest
 pytest-asyncio
 httpx
+slowapi>=0.1.9

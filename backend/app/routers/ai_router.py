@@ -2,14 +2,16 @@
 
 import logging
 import uuid
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.limiter import limiter
 from app.models import Assessment, User
 from ml.llm_client import explain_assessment, chat_followup
 
@@ -26,6 +28,7 @@ class ExplainRequest(BaseModel):
     assessment_id: uuid.UUID
     question: str | None = Field(
         default=None,
+        max_length=1000,
         description="Optional question to ask about the assessment. "
         "If omitted, a general personalized summary is generated.",
     )
@@ -39,8 +42,8 @@ class ExplainResponse(BaseModel):
 
 class ChatMessage(BaseModel):
     """A single message in the conversation history."""
-    role: str = Field(description="Either 'user' or 'assistant'")
-    content: str
+    role: Literal["user", "assistant"] = Field(description="Must be either 'user' or 'assistant'")
+    content: str = Field(min_length=1, max_length=2000)
 
 
 class ChatRequest(BaseModel):
@@ -49,7 +52,8 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
     history: list[ChatMessage] = Field(
         default_factory=list,
-        description="Previous conversation messages for context.",
+        max_length=10,
+        description="Previous conversation messages for context (max 10).",
     )
 
 
@@ -92,7 +96,9 @@ async def _get_owned_assessment(
 
 
 @router.post("/explain", response_model=ExplainResponse)
+@limiter.limit("10/minute")
 async def explain(
+    request: Request,
     body: ExplainRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -114,16 +120,16 @@ async def explain(
             question=body.question,
         )
     except RuntimeError as exc:
-        # GEMINI_API_KEY not configured
+        logger.warning(f"AI explain configuration error: {exc}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
+            detail="AI service is not configured on the server.",
         )
     except Exception as exc:
         logger.exception("AI explanation failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"AI explanation failed: {str(exc)}",
+            detail="AI explanation service failed. Please try again later.",
         )
 
     return ExplainResponse(
@@ -133,7 +139,9 @@ async def explain(
 
 
 @router.post("/chat", response_model=ChatResponse)
+@limiter.limit("10/minute")
 async def chat(
+    request: Request,
     body: ChatRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -162,15 +170,16 @@ async def chat(
             user_message=body.message,
         )
     except RuntimeError as exc:
+        logger.warning(f"AI chat configuration error: {exc}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
+            detail="AI service is not configured on the server.",
         )
     except Exception as exc:
         logger.exception("AI chat failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"AI chat failed: {str(exc)}",
+            detail="AI chat service failed. Please try again later.",
         )
 
     return ChatResponse(

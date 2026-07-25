@@ -34,11 +34,14 @@ function ChatWidget({ assessmentId }) {
     setLoading(true);
 
     try {
-      // Build history from previous messages (exclude current)
-      const history = messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      // Build history from previous valid messages (exclude error messages and slice last 10)
+      const history = messages
+        .filter((m) => m.role === 'user' || m.role === 'assistant')
+        .slice(-10)
+        .map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
 
       const res = await api.post('/ai/chat', {
         assessment_id: assessmentId,

@@ -1,10 +1,11 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.limiter import limiter
 from app.models import Assessment, User
 from app.schemas import PredictionRequest, PredictionResponse, RecommendationItem
 from ml.model import predict
@@ -16,7 +17,9 @@ router = APIRouter()
 
 
 @router.post("/predict", response_model=PredictionResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("20/minute")
 async def run_prediction(
+    request: Request,
     body: PredictionRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

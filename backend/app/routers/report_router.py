@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 from sqlalchemy import select
@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.limiter import limiter
 from app.models import Assessment, User
 from ml.report_generator import ReportGenerator
 from ml.audio_generator import generate_audio_report
@@ -39,7 +40,9 @@ async def _get_owned_assessment(
 
 
 @router.get("/reports/{assessment_id}/pdf")
+@limiter.limit("15/minute")
 async def download_pdf_report(
+    request: Request,
     assessment_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -62,7 +65,9 @@ async def download_pdf_report(
 
 
 @router.get("/reports/{assessment_id}/audio")
+@limiter.limit("15/minute")
 async def download_audio_report(
+    request: Request,
     assessment_id: uuid.UUID,
     lang: str = Query(default="en"),
     current_user: User = Depends(get_current_user),
@@ -83,7 +88,7 @@ async def download_audio_report(
         logger.exception("Audio generation failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Audio generation failed: {str(exc)}",
+            detail="Audio generation failed. Please try again later.",
         )
 
     return StreamingResponse(

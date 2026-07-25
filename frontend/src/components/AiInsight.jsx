@@ -39,7 +39,7 @@ function AiInsight({ assessmentId }) {
       <div className="ai-insight-header">
         <span className="ai-insight-icon">✨</span>
         <h3 className="ai-insight-title">AI Health Insight</h3>
-        <span className="ai-insight-badge">Gemini</span>
+        <span className="ai-insight-badge">Groq AI</span>
       </div>
 
       {loading && (
