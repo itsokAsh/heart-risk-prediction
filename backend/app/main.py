@@ -56,7 +56,7 @@ app.include_router(assessment_router.router, prefix="/api", tags=["Assessments"]
 app.include_router(ai_router.router, prefix="/api/ai", tags=["AI"])
 
 
-@app.get("/api/health", tags=["Health"])
+@app.api_route("/api/health", methods=["GET", "HEAD"], tags=["Health"])
 async def health_check() -> dict:
     """Application health check endpoint."""
     return {"status": "healthy", "version": "1.0.0"}
